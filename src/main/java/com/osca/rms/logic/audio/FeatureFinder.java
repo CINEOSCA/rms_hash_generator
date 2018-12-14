@@ -1,8 +1,10 @@
 package com.osca.rms.logic.audio;
 
+
 import com.osca.rms.model.Complex;
 import com.osca.rms.model.FFT;
 import org.apache.commons.lang3.ArrayUtils;
+import org.json.JSONArray;
 import org.json.JSONObject;
 import javax.sound.sampled.AudioInputStream;
 import java.io.IOException;
@@ -19,12 +21,12 @@ public class FeatureFinder {
 
 
 
-    public Map<Long, List<Integer>> extractFeaturesNew(AudioInputStream in, int silde, int shiftWin, boolean isRegister)
+    public JSONObject extractFeaturesNew(AudioInputStream in, int silde, int shiftWin, boolean isRegister)
     {
         long timeMills = System.currentTimeMillis();
 
-        Map<Long, List<Integer>>  retMap = new HashMap<Long, List<Integer>>();
-
+        //Map<Long, List<Integer>>  retMap = new HashMap<Long, List<Integer>>();
+        JSONObject retMap = new JSONObject();
 
         //Skip pre defined(pass as param) number of bits from the begining
         while( silde > 0 )
@@ -136,13 +138,14 @@ public class FeatureFinder {
                 long h = hash(points[0], points[1], points[2],points[3]);
 
 
-                List<Integer> listPoints = null;
-                if ((listPoints = retMap.get(h)) == null) {
-                    listPoints = new ArrayList<Integer>();
-                    listPoints.add(time);
-                    retMap.put(h, listPoints);
+                JSONArray listPoints = null;
+                if (!retMap.has(String.valueOf(h))) {
+                    listPoints = new JSONArray();
+                    listPoints.put(time);
+                    retMap.put(String.valueOf(h),listPoints);
                 } else {
-                    listPoints.add(time);
+                    listPoints = (JSONArray) retMap.get(String.valueOf(h));
+                    listPoints.put(time);
                 }
 
                 time++;
@@ -170,14 +173,14 @@ public class FeatureFinder {
 
             if( !isRegister && numSilents >= 25 )
             {
-                retMap = new HashMap<Long, List<Integer>>();
-                retMap.put((long)(numSilents), null);
+                retMap = new JSONObject();
+                retMap.put(String.valueOf(numSilents), new ArrayList<Integer>());
                 return retMap;
             }
 
         } catch (Exception e) {
             e.printStackTrace();
-            retMap = new HashMap<Long, List<Integer>>();
+            retMap = new JSONObject();
         }
 
 

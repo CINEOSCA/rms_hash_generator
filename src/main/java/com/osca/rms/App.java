@@ -3,6 +3,7 @@ package com.osca.rms;
 import com.osca.rms.logic.audio.FeatureFinder;
 import com.osca.rms.logic.audio.FormatConverter;
 import com.osca.rms.util.FileUtil;
+import org.json.JSONObject;
 
 import javax.sound.sampled.AudioInputStream;
 import java.io.File;
@@ -15,7 +16,7 @@ public class App {
         FileUtil.mp3ToWav(file.getAbsolutePath(), "./temp/test");
         FormatConverter newConverter = new FormatConverter();
         List<AudioInputStream> convertFormat = newConverter.convertFormat(new File("./temp/test.wav"));
-        Map<Long, List<Integer>> hashMap = new FeatureFinder().extractFeaturesNew(convertFormat.get(0), 0, FeatureFinder.FFT_SHIFT_WIN_SIZE, true);
+        JSONObject hashMap = new FeatureFinder().extractFeaturesNew(convertFormat.get(0), 0, FeatureFinder.FFT_SHIFT_WIN_SIZE, true);
         System.out.println(hashMap.toString());
         new File("./temp/test.wav").delete();
     }
