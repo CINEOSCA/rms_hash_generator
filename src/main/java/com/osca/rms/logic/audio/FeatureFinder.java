@@ -1,11 +1,9 @@
 package com.osca.rms.logic.audio;
 
-
 import com.osca.rms.model.Complex;
 import com.osca.rms.model.FFT;
 import org.apache.commons.lang3.ArrayUtils;
-import org.json.JSONArray;
-import org.json.JSONObject;
+
 import javax.sound.sampled.AudioInputStream;
 import java.io.IOException;
 import java.util.*;
@@ -20,13 +18,12 @@ public class FeatureFinder {
     private static final int FUZ_FACTOR = 2;
 
 
-
-    public JSONObject extractFeaturesNew(AudioInputStream in, int silde, int shiftWin, boolean isRegister)
+    public Map<Long, List<Integer>> extractFeaturesNew(AudioInputStream in, int silde, int shiftWin, boolean isRegister)
     {
         long timeMills = System.currentTimeMillis();
 
-        //Map<Long, List<Integer>>  retMap = new HashMap<Long, List<Integer>>();
-        JSONObject retMap = new JSONObject();
+        Map<Long, List<Integer>>  retMap = new HashMap<Long, List<Integer>>();
+
 
         //Skip pre defined(pass as param) number of bits from the begining
         while( silde > 0 )
@@ -138,14 +135,13 @@ public class FeatureFinder {
                 long h = hash(points[0], points[1], points[2],points[3]);
 
 
-                JSONArray listPoints = null;
-                if (!retMap.has(String.valueOf(h))) {
-                    listPoints = new JSONArray();
-                    listPoints.put(time);
-                    retMap.put(String.valueOf(h),listPoints);
+                List<Integer> listPoints = null;
+                if ((listPoints = retMap.get(h)) == null) {
+                    listPoints = new ArrayList<Integer>();
+                    listPoints.add(time);
+                    retMap.put(h, listPoints);
                 } else {
-                    listPoints = (JSONArray) retMap.get(String.valueOf(h));
-                    listPoints.put(time);
+                    listPoints.add(time);
                 }
 
                 time++;
@@ -155,7 +151,7 @@ public class FeatureFinder {
                 for(int i = 0, s = 0; i < buffer.length;) {
                     int sample = 0;
 
-                   sample = buffer[i++];
+                    sample = buffer[i++];
 
                     samples[s++] = sample / 32768f;
                 }
@@ -173,14 +169,14 @@ public class FeatureFinder {
 
             if( !isRegister && numSilents >= 25 )
             {
-                retMap = new JSONObject();
-                retMap.put(String.valueOf(numSilents), new ArrayList<Integer>());
+                retMap = new HashMap<Long, List<Integer>>();
+                retMap.put((long)(numSilents), null);
                 return retMap;
             }
 
         } catch (Exception e) {
             e.printStackTrace();
-            retMap = new JSONObject();
+            retMap = new HashMap<Long, List<Integer>>();
         }
 
 
